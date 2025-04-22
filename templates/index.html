@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agentic Workflow</title>
+    <style>
+        body {
+            font-family: "Playfair Display", serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a, #1c1c1c);
+            color: #d1d1d1;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 2.8em;
+            background: linear-gradient(to right, #0a0a0a, #2e2e2e);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2), 0 0 20px rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+        }
+        form {
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+        input[type="text"] {
+            padding: 12px;
+            width: 350px;
+            border: 3px solid #8b0000;
+            border-radius: 8px;
+            font-family: "Playfair Display", serif;
+            font-size: 1.1em;
+            background: #1c1c1c;
+            color: #d1d1d1;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #b22222;
+            box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+            outline: none;
+        }
+        input[type="submit"] {
+            padding: 12px 25px;
+            background-color: #6a0dad;
+            color: #ffffff;
+            border: 2px solid #8b0000;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: "Playfair Display", serif;
+            font-size: 1.1em;
+            margin-left: 10px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #4b0082;
+            box-shadow: 0 0 15px rgba(106, 13, 173, 0.7);
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            max-width: 650px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        li {
+            background: #0a0a0a;
+            margin: 10px 0;
+            padding: 20px;
+            border-left: 6px solid #8b0000;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(139, 0, 0, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        li:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.9), inset 0 0 15px rgba(139, 0, 0, 0.3);
+        }
+        .task-actions form {
+            display: inline;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #6a0dad;
+            color: #ffffff;
+            border: 2px solid #8b0000;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "Playfair Display", serif;
+            font-size: 1em;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        button:hover {
+            background-color: #4b0082;
+            box-shadow: 0 0 12px rgba(106, 13, 173, 0.6);
+        }
+        input[type="text"][name="new_task"] {
+            padding: 8px;
+            width: 180px;
+            margin-right: 5px;
+            border-color: #8b0000;
+            background: #1c1c1c;
+            color: #d1d1d1;
+        }
+        input[type="text"][name="new_task"]:focus {
+            border-color: #b22222;
+            box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <h1>Enter Your Task</h1>
+    <form method="POST" action="/run">
+        <input type="text" name="query" placeholder="e.g., Plan a meetup with a friend" required>
+        <input type="submit" value="Submit">
+    </form>
+    {% if sub_tasks %}
+        <h2>Sub-tasks:</h2>
+        <ul>
+        {% for task in sub_tasks %}
+            <li>
+                {{ task }}
+                <div class="task-actions">
+                    <form method="POST" action="/update_task" style="display:inline;">
+                        <input type="hidden" name="task_index" value="{{ loop.index0 }}">
+                        <input type="text" name="new_task" placeholder="Update task" style="width: 150px;">
+                        <input type="hidden" name="sub_tasks[]" value="{{ task }}" multiple>
+                        {% for t in sub_tasks if t != task %}
+                            <input type="hidden" name="sub_tasks[]" value="{{ t }}">
+                        {% endfor %}
+                        <button type="submit">Update</button>
+                    </form>
+                    <form method="POST" action="/delete_task" style="display:inline;">
+                        <input type="hidden" name="task_index" value="{{ loop.index0 }}">
+                        <input type="hidden" name="sub_tasks[]" value="{{ task }}" multiple>
+                        {% for t in sub_tasks if t != task %}
+                            <input type="hidden" name="sub_tasks[]" value="{{ t }}">
+                        {% endfor %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+        <h2>Results:</h2>
+        <ul>
+        {% for task, result in results.items() %}
+            <li>{{ result }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
